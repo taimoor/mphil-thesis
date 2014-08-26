@@ -4,43 +4,31 @@ import java.util.Random;
 public class PathFinder {
 	private static int nrows = 6, ncols = 6, final_state = 5, initial_state = 2;
 	private static double gama = 0.8;
-    private int[][] data= new int[6][6];
+    private static int[][]  qmatrix, rmatrix;
     
    public static void main(String[] args) {
-
-	   int[][] qmatrix = new int[nrows][ncols];
-	   int[][] rmatrix = new int[nrows][ncols];
+	   qmatrix = rmatrix = new int[nrows][ncols] ;
+	   set_rmatrix(nrows,ncols); // R matrix this will depict the connection between rooms/states.
+	   set_qmatrix(nrows,ncols); //matrix whose values will be updated by path_finder class.
 	   
-	   PathFinder pf = new PathFinder(); // object to call the instance methods of class
-	   rmatrix = pf.rmatrix(nrows,ncols); // R matrix this will depict the connection between rooms/states.
-	   qmatrix = pf.matrix(nrows,ncols); //matrix whose values will be updated by path_finder class.
 	   System.out.println(Arrays.deepToString(rmatrix));
-	   //generate random states
+	   //loop for running episodes 100 times
 	   for(int i=0; i< 100; i++){
 		   Random rand = new Random();
 		   int current_state, next_state;
 		   current_state = rand.nextInt(5 + 1);
-		   
-//		   System.out.println("hi there :D  current_state= "+ current_state);
 //		   System.out.println(Arrays.deepToString(rmatrix));
-		   
 		   next_state = next_state(rand, current_state, rmatrix);
 		   //this loop depicts one episode
 		   do{
-			  
 			  int max = max(qmatrix, next_state,ncols);
 			  qmatrix[current_state][next_state] = rmatrix[current_state][next_state] + (int)(gama*max);
-//			  System.out.println("qmatrix=="+qmatrix[current_state][next_state]);
-			  
+//			  System.out.println("qmatrix=="+qmatrix[current_state][next_state]);  
 			  current_state = next_state;
 			  next_state = next_state(rand, current_state, rmatrix);
 //			  System.out.println("next_state= "+next_state+"  action= "+ rmatrix[current_state][next_state]);
 			  // next state will be chosen from current state row
-		   }while(next_state != final_state);
-		  
-//		   q(current_state, next_state)= rmatrix(current_state, next_state) + gama*max[(next_state, all actions)]
-//		   randomNum;
-		 //pick actions max(next state, all actions)   
+		   }while(next_state != final_state); 
 	   }
 	   
 	   System.out.println(Arrays.deepToString(qmatrix));
@@ -68,8 +56,7 @@ public class PathFinder {
    }
    
    public static int next_optimal_state(int[][] data, int row_no, int ncols){
-	   int max = -1, next_state=-1;
-	   
+	   int max = -1, next_state=-1;   
 	   for(int i=0; i < ncols; i++){
 //		   data[row_no][i];
 		   int current_element = data[row_no][i];
@@ -93,37 +80,33 @@ public class PathFinder {
    }
    
    // R matrix will be build by this function.
-   public int[][] rmatrix(int nrows, int ncols){
+   public static void set_rmatrix(int nrows, int ncols){
 	// initializing R matrix
        for(int i=0; i< nrows; i++ ){
   	     for(int j=0; j< ncols; j++ ){
-  	    	data[i][j] = -1;    
+  	    	rmatrix[i][j] = -1;    
   		 }   
   	   }
-       data[0][4] = data[1][3] = data[2][3] = data[3][1] = data[3][2] = data[3][4] = data[4][0] = data[4][3] = data[5][1] = data[5][4] = 0;
-       data[1][5] = data[4][5] = data[5][5] = 100;
-       return data;
+       rmatrix[0][4] = rmatrix[1][3] = rmatrix[2][3] = rmatrix[3][1] = rmatrix[3][2] = rmatrix[3][4] = rmatrix[4][0] = rmatrix[4][3] = rmatrix[5][1] = rmatrix[5][4] = 0;
+       rmatrix[1][5] = rmatrix[4][5] = rmatrix[5][5] = 100;
    }
 // create M-by-N matrix of 0's, Q matrix will be build by this function.
-   public int[][] matrix(int nrows, int ncols) {
-	   nrows = data.length;
-	   ncols = data[0].length;
-       data = new int[nrows][ncols];
-       // initializing R matrix
+   public static void set_qmatrix(int nrows, int ncols) {
+	   nrows = qmatrix.length;
+	   ncols = qmatrix[0].length;
+	   qmatrix= new int[nrows][ncols];
+       // initializing Q matrix
        for(int i=0; i< nrows; i++ ){
   	     for(int j=0; j< ncols; j++ ){
-  	    	data[i][j] = 0;    
+  	    	qmatrix[i][j] = 0;    
   		 }
   	   }
-       return data;
    }
    
    // max: will return the maximum value in a row of matrix to be used in learning formula.
    public static int max(int[][] data, int row_no, int ncols){
 	   int max = -1;
-	   
 	   for(int i=0; i < ncols; i++){
-//		   data[row_no][i];
 		   int current_element = data[row_no][i];
 		   if (max < current_element){
 			   max = current_element;
@@ -136,12 +119,10 @@ public class PathFinder {
 	   int[] actions = new int[ncols];
 	   int count = 0;
 	   for(int i=0; i < ncols; i++){
-//		   data[row_no][i];
 		   int current_element = data[row_no][i];
 		   if(current_element != -1){
 			   actions[count++] = current_element; 
 		   }
-		   
 	   }
 	   return data;
    }
